@@ -41,7 +41,7 @@ class Request extends Event
 	
 	public function parseRequest()
 	{
-		$uri = substr( $this -> REQUEST_URI, 1);
+		$uri = substr( $_SERVER['REQUEST_URI'], 1);
 		$tmp = explode('/',$uri);
 		if ( $tmp1 = array_shift($tmp) )
 		{
