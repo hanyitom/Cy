@@ -1,6 +1,5 @@
 <?php
 namespace Cy\Config;
-use Cy\Exception\Exception;
 use Cy\Mvc\Event\Event;
 
 class Config extends Event
