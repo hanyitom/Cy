@@ -52,7 +52,7 @@ abstract class AbstractDb
     {
 		try
 		{
-			$dsn = $dbConf['type'].':host='.$dbConf['host'].';dbname='.$dbConf['dbname'];
+			$dsn = $dbConf['type'].':host='.$dbConf['host'].';dbname='.$dbConf['dbName'];
 			if ( isset($dbConf['port']) )
 				$dsn .= ';port='. $dbConf['port'];
 			$arr = array(\PDO::ATTR_PERSISTENT => $dbConf['persistent'],

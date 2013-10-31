@@ -32,8 +32,8 @@ class EventStore
 
     public function get($namespace, $params)
     {
-        if (isset($this->_storage[$namespace]) && $this->_storage[$namespace]['params'] == serialize($params))
-            return $this->_storage[$namespace];
+        if (isset($this->_storage[$namespace]) && $this->_storage[$namespace]['params'] == $params)
+            return $this->_storage[$namespace]['obj'];
         else
             return $this->make($namespace, $params);
     }
