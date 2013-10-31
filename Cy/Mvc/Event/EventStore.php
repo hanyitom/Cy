@@ -21,8 +21,6 @@ class EventStore
 
 	public function set($namespace, $obj, $params)
 	{
-        if ($namespace=='Cy\Mvc\Model\Model')
-        {echo '<pre>';var_dump($this->_storage);}
 		if (!isset($this->_storage[$namespace]))
         {
             $this->_storage[$namespace]['obj']      = $obj;

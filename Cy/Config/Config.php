@@ -47,7 +47,6 @@ class Config extends Event
 	{
 		if ( isset($this->_conf[$configName]) )
 			return $this->_conf[$configName];
-        echo $this->_confBasePath;
         if ( file_exists($this->_confBasePath.$configName.$type) )
         switch($type)
 		{
