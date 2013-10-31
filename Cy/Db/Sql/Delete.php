@@ -1,20 +1,20 @@
 <?php
 namespace Cy\Db\Sql;
-use Cy\Db\Sql\Abstract_BaseSQL;
+use Cy\Db\Sql\AbstractBaseSQL;
 
-class Delete extends Abstract_BaseSQL
+class Delete extends AbstractBaseSQL
 {
 	public function __construct($tablename)
 	{
-		parent :: __construct();
-		$this -> sql = 'delete from '.$tablename;
+		parent::__construct();
+		$this->_sql = 'delete from '.$tablename;
 	}
 	public function toString()
 	{
-		$sql = $this -> sql;
-		if ( $this -> where != null )
-			$sql .= $this -> where;
-		$this -> Db -> sql = $sql;
-		return $this -> sql;
+		$sql = $this->_sql;
+		if ( $this->_where != null )
+			$sql .= $this->_where;
+		$this->_db->_sql = $sql;
+		return $this->_sql;
 	}
 }

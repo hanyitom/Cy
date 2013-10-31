@@ -24,5 +24,4 @@ interface InterfaceEventRegister
 	 * 检查是否已经寄存了指定的对象实例
 	 * @param Object $eventObj	寄存对象的实例
 	 */
-	public function isRegistered($namespace);
 }

@@ -1,9 +1,9 @@
 <?php
 namespace Cy\Mvc;
 
-use Cy\Mvc\Event\Event;
+use Cy\Mvc\EventsManager;
 
-class Request extends Event
+class Request
 {
 	private $_REQUEST_CLASS	    =	'index';
 	private $_REQUEST_ACTION	=	'index';
@@ -11,11 +11,15 @@ class Request extends Event
     private $_LANGUAGES         =   array('cn','en','jp');
     private $_LANGUAGE          =   LANGUAGE;
 
-    public function __construct($isIndex = false)
+    private function __construct($isIndex)
     {
-		parent::__construct();
 		$this->parseRequest($isIndex);
 	}
+
+    public static function getInstance($isIndex = false)
+    {
+        return new self($isIndex);
+    }
 
 	public function parseRequest($isIndex)
 	{

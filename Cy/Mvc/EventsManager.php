@@ -37,13 +37,12 @@ class EventsManager
 	{
 		spl_autoload_register(array('\Cy\Loader\Loader', 'autoLoad'));
         $config = new Config(CONF);
-        $plugin = new Plugin(PLUGIN);
         self::$_eventRegister   =   EventRegister::getInstance();
         self::$_di              =   Di::getInstance();
-        self::$_baseConf        =   $config->getConfig('BASE_INFO');
-		self::$_eventRegister   ->register ('Cy\Plugin\Plugin',     $plugin);
+        self::$_baseConf        =   $config->getConfig('baseConf');
+		self::$_eventRegister   ->register ('Cy\Plugin\Plugin',     Plugin::getInstance(PLUGIN));
 		self::$_eventRegister   ->register ('Cy\Config\Config',     $config);
-		self::$_eventRegister   ->register ('Cy\Log\Log_Manager',   LogManager::getInstance());
+		self::$_eventRegister   ->register ('Cy\Log\LogManager',   LogManager::getInstance());
         self::$_eventRegister   ->register ('Cy\Mvc\Model\Model',   new Model());
 //等待DEBUG模块
 //		if ( DEBUG )
@@ -59,7 +58,8 @@ class EventsManager
         if (self::$_exception !== null)
             self::$_exception->showException();
         new self();
-        new View(new Response(new Router(new Request(), self::$_isModules)));
+        Render::Initialization();
+        new Response(Router::getInstance(Request::getInstance(), self::$_isModules));
         self::$_di->detach();
 	}
 
@@ -87,6 +87,11 @@ class EventsManager
 			self::$_modules[$k] = $v;
         return true;
 	}
+
+    public static function getDi()
+    {
+        return self::$_di;
+    }
 
     public static function getModules()
     {

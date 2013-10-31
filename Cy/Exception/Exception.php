@@ -43,10 +43,10 @@ class Exception extends \Exception
 
 	public function exceptionLog()
 	{
-		EventsManager::getEventRegister() ->getRegistered('Cy\Log\Log_Manager')
-										  ->exception()
-										  ->message( $this->_message )
-										  ->add();
+        EventsManager::getEventRegister()->getRegistered('Cy\Log\LogManager')
+										 ->exception()
+										 ->message( $this->_message )
+										 ->add();
 	}
 }
 ?>

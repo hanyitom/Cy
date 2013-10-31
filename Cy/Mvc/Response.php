@@ -1,22 +1,25 @@
 <?php
 namespace Cy\Mvc;
-use Cy\Mvc\Event\Event;
+
+use Cy\Mvc\EventsManager;
 use Cy\Mvc\Controller\Controller;
 
-class Response extends Event 
+class Response
 {
 	private $_router;
 
 	public function __construct($router)
 	{
-		parent::__construct();
 		$this->_router = $router;
-		$this->getDi() -> detach();
-		$this->attach( $this, 'getResult');
+		EventsManager::getDi()->detach();
+        EventsManager::getDi()
+            ->attach(array('obj'=>  $this,
+                        'func'  =>  'getResult',
+                        'params'=>  array()));
 	}
 
 	public function getResult()
 	{
-
+        $_router->endRouter();
     }
 }

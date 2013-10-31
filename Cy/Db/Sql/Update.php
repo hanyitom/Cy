@@ -1,12 +1,12 @@
 <?php
 namespace Cy\Db\Sql;
-use Cy\Db\Sql\Abstract_BaseSQL;
+use Cy\Db\Sql\AbstractBaseSQL;
 
 /**
  * 更新类sql语句
  * @author Toby
  */
-class Update extends Abstract_BaseSQL
+class Update extends AbstractBaseSQL
 {
 	/**
 	 * 实例化对象
@@ -15,7 +15,7 @@ class Update extends Abstract_BaseSQL
 	 */
 	public function __construct($tablename,$columns)
 	{
-		parent :: __construct();
+		parent::__construct();
 		$key = $val = $column =  array();
 		foreach($columns as $key => $val)
 		{
@@ -24,18 +24,18 @@ class Update extends Abstract_BaseSQL
 			$column[] = $key. '='. $val; 
 		}
 		$c = implode(',',$column);
-		$this -> sql = 'update '. $tablename. ' set '. $c;
+		$this->_sql = 'update '. $tablename. ' set '. $c;
 	}
-	
+
 	/**
 	 * @see library/Cy/Db/Sql/Cy\Db\Sql.BaseSQL_Abstract::__toString()
 	 */
 	public function toString()
 	{
-		$sql = $this -> sql;
-		if ( $this -> where != null )
-			$sql .= $this -> where;
-		$this -> Db -> sql = $sql;
-		return $this -> sql;
+		$sql = $this->_sql;
+		if ( $this->_where != null )
+			$sql .= $this->_where;
+		$this->_db->_sql = $sql;
+		return $this->_sql;
 	}
 }

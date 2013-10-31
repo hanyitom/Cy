@@ -1,29 +1,37 @@
 <?php
 namespace Cy\Mvc;
-use Cy\Mvc\Event\Event;
-use Cy\Loader\Loader;
-use Cy\Module\Module;
 
-class Router extends Event
+use Cy\Mvc\EventsManager;
+use Cy\Loader\Loader;
+use Cy\Module\Modules;
+
+class Router
 {
 	private $_namespace =   '';
 	private $_isModules =   false;
     private $_request   =   null;
 
-	public function __construct($request, $isModules)
+	private function __construct($request, $isModules)
 	{
-		parent::__construct();
 		$this->_request     =   $request;
         $this->_isModules   =   $isModules;
-        $this->getDi()->detach();
-		$this->attach($this, 'dispatch');
+        EventsManager::getDi()->detach();
+        EventsManager::getDi()
+            ->attach(array('obj'=>  $this,
+                        'func'  =>  'dispatch',
+                        'params'=>  array()));
 	}
+
+    public static function getInstance($request, $isModules)
+    {
+        return new self($request, $isModules);
+    }
 
 	private function getNamespace()
 	{
 		$this->_namespace = 'controller\\'.$this->_request->getClass();
 		if ( $this->_isModules )
-			$this->_namespace = Module::getNamespace($this->_namespace);
+			$this->_namespace = Modules::getNamespace($this->_namespace);
 	}
 
 	public function dispatch()

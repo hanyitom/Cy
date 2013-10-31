@@ -1,12 +1,12 @@
 <?php
 namespace Cy\Db\Sql;
-use Cy\Db\Sql\Abstract_BaseSQL;
+use Cy\Db\Sql\AbstractBaseSQL;
 
-class Insert extends Abstract_BaseSQL
+class Insert extends AbstractBaseSQL
 {
 	public function __construct($tablename,$columns)
 	{
-		parent :: __construct();
+		parent::__construct();
 		$column = $value = array();
 		foreach($columns as $key => $val)
 		{
@@ -15,12 +15,12 @@ class Insert extends Abstract_BaseSQL
 		}
 		$c = implode(',',$column);
 		$v = implode(',',$value);
-		$this -> sql = 'insert into '. $tablename. '('. $c. ') values('. $v. ')';
+		$this->_sql = 'insert into '. $tablename. '('. $c. ') values('. $v. ')';
 	}
-	
+
 	public function toString()
 	{
-		$this -> Db -> sql = $this -> sql;
-		return $this -> sql;
+		$this->_db->_sql = $this->_sql;
+		return $this->_sql;
 	}
 }

@@ -1,40 +1,40 @@
 <?php
 namespace Cy\Db\Sql;
-use Cy\Db\Sql\Abstract_BaseSQL;
+use Cy\Db\Sql\AbstractBaseSQL;
 
-class Select extends Abstract_BaseSQL
+class Select extends AbstractBaseSQL
 {
 	const LEFT = 'left join';
 	const RIGHT = 'right join';
 	const INNER = 'inner join';
 	const CROSS = 'cross join';
-	protected $join = null;
-	
+	protected $_join = null;
+
 	public function join($tablename, $type)
 	{
-		$this -> join = $type. ' '. $tablename;
+		$this->_join = $type. ' '. $tablename;
 		return $this;
 	}
 	public function __construct($columns, $tablename)
 	{
-		parent :: __construct();
-		$this -> sql = 'select '. $columns. ' from '. $tablename;
+		parent::__construct();
+		$this->_sql = 'select '. $columns. ' from '. $tablename;
 		return $this;
 	}
 	public function toString()
 	{
-		$sql = $this -> sql;
-		if ( $this -> where )
-			$sql .= $this -> where;
-		if ( $this -> group )
-			$sql .= $this -> group;
-		if ( $this -> having )
-			$sql .= $this -> having;
-		if ( $this -> order )
-			$sql .= $this -> order;
-		if ( $this -> limit )
-			$sql .= $this -> limit;
-		$this -> Db -> sql = $sql;
-		return $this -> sql;
+		$sql = $this->_sql;
+		if ( $this->_where )
+			$sql .= $this->_where;
+		if ( $this->_group )
+			$sql .= $this->_group;
+		if ( $this->_having )
+			$sql .= $this->_having;
+		if ( $this->_order )
+			$sql .= $this->_order;
+		if ( $this->_limit )
+			$sql .= $this->_limit;
+		$this->_db->_sql = $sql;
+		return $this->_sql;
 	}
 }

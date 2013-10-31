@@ -3,15 +3,14 @@ namespace Cy\Mvc\Event;
 
 use Cy\Mvc\Event\InterfaceEvent;
 use Cy\Mvc\EventsManager;
-use Cy\Mvc\Event\EventException;
 
 class Event implements InterfaceEvent
 {
 	protected function __construct(){}
 
-	final public function register($namespace, $eventObj)
+	final public function register($namespace, $eventObj, $params = array())
 	{
-		$this->getEventRegister()->register($namespace, $eventObj);
+		$this->getEventRegister()->register($namespace, $eventObj, $params);
 	}
 
 	final public function getRegistered($namespace, $params = array())
@@ -46,5 +45,5 @@ class Event implements InterfaceEvent
 	protected function getEventRegister()
 	{
 		return EventsManager::getEventRegister();
-	}
+    }
 }

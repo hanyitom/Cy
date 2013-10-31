@@ -1,90 +1,98 @@
 <?php
 namespace Cy\Db;
 
-use Cy\Mvc\Event\Event;
 use Cy\Log\Log;
 use Cy\Mvc\EventsManager;
+use Cy\Exception\Exception;
 
 /**
  * PDO封装类
  * @author Toby
  */
-abstract class AbstractDb extends Event
+abstract class AbstractDb
 {
 	/**
 	 * 记录执行的sql
 	 */
-	public $sql;
+	public $_sql;
 	/**
 	 * PDO对象实例
 	 * @var Object of PDO
 	 */
-	protected $PDO;
+	protected $_pdo;
 	/**
 	 * 输出模式
 	 * @var PDO常量
 	 */
-	protected $fetch_mode = \PDO :: FETCH_ASSOC;
+	protected $_fetchMode = \PDO::FETCH_ASSOC;
 	/**
 	 * Db配置
 	 * @var Array
 	 */
-	protected $DBconfig;
-	protected $Log_Flag;
-	protected $prepare;
+    protected $_dbConf;
+    protected $_dbName;
+	protected $_logFlag;
+	protected $_prepare;
 
 	/**
 	 * 实例化对象
-	 * @param Array $DBconfig
+     * @param Array  $dbConf
+     * e.g array('type'=>'mysql','host'=>'127.0.0.1','dbName'=>'test',
+     * 'port'=>3306,'char'=>'utf8','user'=>'root','pass'=>'','log'=>false, 'persistent'=>false)
 	 */
-	public function __construct()
+	protected function __construct($dbConf)
 	{
-		parent::__construct();
-		$this->Log_Flag = false;
-		$Base_Config_Info = $this -> getEvent_Register() -> getRegistered('Cy\Config\Config') -> getConfig('BASE_INFO');
-		$this -> DBconfig = $Base_Config_Info['Base_Db'];
-		$this -> initDB();
-	}
+		$this->_logFlag = false;
+        $this->_dbConf[$dbConf['dbName']] = $dbConf;
+        $this->_dbName  = $dbConf['dbName'];
+        $this->initDb($dbConf);
+    }
 
-	/**
-	 * 初始化
-	 */
-	protected function initDB()
-	{
+    protected function initDb($dbConf)
+    {
 		try
 		{
-			$dsn = $this -> DBconfig['type']. ':host='. $this -> DBconfig['host']. ';dbname='. $this -> DBconfig['dbname'];
-			if ( isset($this -> DBconfig['port']) )
-				$dsn .= ';port='. $this -> DBconfig['port'];
-			$arr = array(\PDO::ATTR_PERSISTENT => false,
-						\PDO::MYSQL_ATTR_INIT_COMMAND => 'set names '. $this ->DBconfig['char'],
+			$dsn = $dbConf['type'].':host='.$dbConf['host'].';dbname='.$dbConf['dbname'];
+			if ( isset($dbConf['port']) )
+				$dsn .= ';port='. $dbConf['port'];
+			$arr = array(\PDO::ATTR_PERSISTENT => $dbConf['persistent'],
 						\PDO::ATTR_AUTOCOMMIT => true );
-			if ( $this -> DBconfig['persistent'] )
-				$arr[\PDO::ATTR_PERSISTENT] = true;
-			$this -> PDO = new \PDO($dsn,$this -> DBconfig['user'],$this -> DBconfig['pass'],$arr);
-			if (isset($this -> DBconfig['Log_Flag']) && $this -> DBconfig['Log_Flag'])
-				$this -> Log_Flag = true;
+			$this->_pdo = new \PDO($dsn,$dbConf['user'],$dbConf['pass'],$arr);
+            $this->_pdo->exec('SET NAMES '.$dbConf['char']);
+			$this->_logFlag = $dbConf['log'];
 		}
 		catch(\PDOException $e)
 		{
-			$this -> error($e -> getMessage(). 'in File '. $e -> getFile(). ' on line '. $e -> getLine(), 1003);
+            EventsManager::getDi()
+                ->attach(array('obj'=> new Exception($e->getMessage().' in '.$e->getFile().' on line '.$e->getLine(), 1003, true, 1),
+                            'func'  => 'showException',
+                            'params'=> array()));
 		}
 	}
 
+    protected function checkInstance()
+    {
+        if ( !$this->_pdo instanceof \PDO )
+			$this->initDb($this->_dbConf[$this->_dbName]);
+    }
 	/**
 	 * 设置PDO属性
 	 * @params Array $option PDO CONST
 	 */
 	public function setAttribute( $option )
 	{
-		if( !$this -> PDO instanceof \PDO )
-			$this -> initDB();
+        $this->checkInstance();
 		foreach($option as $v)
 		{
 			if ( is_array($v) )
-				$this -> PDO -> setAttribute($v[0],$v[1]);
-			else
-				$this -> error('Error parameter has been given in DB attribute setting!',1004);
+				$this->_pdo->setAttribute($v[0],$v[1]);
+            else
+            {
+                EventsManager::getDi()
+                    ->attach(array('obj'=> new Exception('Invalid parameter been given for setting attributes to PDO', 1004, true, 1),
+                                'func'  => 'showException',
+                                'params'=> array()));
+            }
 		}
 	}
 
@@ -93,7 +101,7 @@ abstract class AbstractDb extends Event
 	 */
 	public function getFetchMode()
 	{
-		return $this -> fetch;
+		return $this->_fetchModel;
 	}
 
 	/**
@@ -102,7 +110,7 @@ abstract class AbstractDb extends Event
 	 */
 	public function setFetchMode( $fetchMode )
 	{
-		$this -> fetch = $fetchMode;
+		$this->_fetchModel = $fetchMode;
 	}
 
 	/**
@@ -110,7 +118,7 @@ abstract class AbstractDb extends Event
 	 */
 	public function getLastSql()
 	{
-		return $this -> sql;
+		return $this->_sql;
 	}
 
 	/**
@@ -118,9 +126,8 @@ abstract class AbstractDb extends Event
 	 */
 	public function getLastInsertId()
 	{
-		if( !$this -> PDO instanceof \PDO )
-			$this -> initDB();
-		return $this -> PDO -> lastInsertId();
+        $this->checkInstance();
+		return $this->_pdo->lastInsertId();
 	}
 
 	/**
@@ -130,8 +137,8 @@ abstract class AbstractDb extends Event
 	 */
 	public function prepare($driver_option = array())
 	{
-		$this -> prepare = $this -> PDO -> prepare($this -> sql,$driver_option);
-		$this -> Db_Log('prepare');
+		$this->_prepare = $this->_pdo->prepare($this->_sql,$driver_option);
+		$this->dbLog('prepare');
 		return $this;
 	}
 
@@ -141,14 +148,19 @@ abstract class AbstractDb extends Event
 	 */
 	public function exec($sql)
 	{
-		$re = $this -> PDO -> exec($sql);
+		$re = $this->_pdo->exec($sql);
 		if($re)
 		{
-			$this -> Db_Log();
+			$this->dbLog();
 			return $re;
 		}
-		else
-			$this -> error('Sql Error for "'.$sql.'"!', 1009);
+        else
+        {
+            EventsManager::getDi()
+                ->attach(array('obj'=> new Exception('Sql Error: '.$sql, 1009, true, 1),
+                            'func'  => 'showException',
+                            'params'=> array()));
+        }
 	}
 
 	/**
@@ -156,9 +168,8 @@ abstract class AbstractDb extends Event
 	 */
 	public function getAvailableDrivers()
 	{
-		if( !$this -> PDO instanceof \PDO )
-			$this -> initDB();
-		return $this -> PDO -> getAvailableDrivers();
+        $this->checkInstance();
+		return $this->_pdo->getAvailableDrivers();
 	}
 
 	/**
@@ -167,18 +178,21 @@ abstract class AbstractDb extends Event
 	 */
 	public function query()
 	{
-		$re = $this -> PDO -> query($this -> sql);
+		$re = $this->_pdo->query($this->_sql);
 		if($re instanceof \PDOStatement)
 		{
-			$this -> Db_Log();
-			if ( strpos('select',$this -> sql) === 0 )
+			$this->dbLog();
+			if ( strpos('select',$this->_sql) === 0 )
 				return $re;
-			return $re -> fetchAll($this -> fetch_mode);
+			return $re->fetchAll($this->_fetchMode);
 		}
 		else
 		{
-			$e = $this -> PDO -> errorInfo();
-			$this -> error($e[2], 1009);
+            $e = $this->_pdo->errorInfo();
+            EventsManager::getDi()
+                ->attach(array('obj'=> new Exception($e[2], 1009, true, 1),
+                            'func'  => 'showException',
+                            'params'=> array()));
 		}
 	}
 
@@ -187,12 +201,11 @@ abstract class AbstractDb extends Event
 	 */
 	public function beginTransaction()
 	{
-		if ( $this -> inTransaction() )
+		if ( $this->inTransaction() )
 			return false;
-		if( !$this -> PDO instanceof \PDO )
-			$this -> initDB();
-		$this -> setAttribute(array(\PDO::ATTR_AUTOCOMMIT,false));
-		$this -> PDO -> beginTransaction();
+        $this->checkInstance();
+		$this->setAttribute(array(\PDO::ATTR_AUTOCOMMIT,false));
+		$this->_pdo->beginTransaction();
 		return $this;
 	}
 
@@ -202,8 +215,8 @@ abstract class AbstractDb extends Event
 	 */
 	public function setAutoCommit()
 	{
-		if( $this -> inTransaction() )
-			$this -> setAttribute(array(\PDO ::ATTR_AUTOCOMMIT,true));
+		if( $this->inTransaction() )
+			$this->setAttribute(array(\PDO ::ATTR_AUTOCOMMIT,true));
 		else
 			return false;
 		return true;
@@ -214,9 +227,8 @@ abstract class AbstractDb extends Event
 	 */
 	public function commit()
 	{
-		if( !$this -> PDO instanceof \PDO )
-			$this -> initDB();
-		$this -> PDO -> commit();
+        $this->checkInstance();
+		$this->_pdo->commit();
 	}
 
 	/**
@@ -224,10 +236,9 @@ abstract class AbstractDb extends Event
 	 */
 	public function rollback()
 	{
-		if( !$this -> PDO instanceof \PDO )
-			$this -> initDB();
-		$this -> Db_Log('rollback');
-		$this -> PDO -> rollback();
+        $this->checkInstance();
+		$this->dbLog('rollback');
+		$this->_pdo->rollback();
 	}
 
 	/**
@@ -235,7 +246,7 @@ abstract class AbstractDb extends Event
 	 */
 	public function inTransaction()
 	{
-		return $this -> PDO -> inTransaction();
+		return $this->_pdo->inTransaction();
 	}
 
 	/**
@@ -244,16 +255,16 @@ abstract class AbstractDb extends Event
 	 */
 	public function quote( $string )
 	{
-		return $this -> PDO -> quote($string);
+		return $this->_pdo->quote($string);
 	}
 
-	protected function Db_Log($type = null, $ex = null)
+	protected function dbLog($type = null, $ex = null)
 	{
-		$this -> Log_Flag = true;
+		$this->_logFlag = true;
 		if ( $type === null || $type == 'prepare' )
 		{
-			$type = substr($this -> sql,0, strpos($this -> sql,' ')-1);
-			$sql = $this -> sql;
+			$type = substr($this->_sql, 0, strpos($this->_sql,' ')-1);
+			$sql = $this->_sql;
 		}
 		else
 		{
@@ -262,13 +273,36 @@ abstract class AbstractDb extends Event
 			else
 				$sql = $ex;
 		}
-		Events_Manager :: getEvent_Register() -> getRegistered('Cy\Log\Log_Manager')
-											  -> Db()
-											  -> message($sql, $type)
-											  -> add();
+        EventsManager::getEventRegister()
+            ->getRegistered('Cy\Log\LogManager')
+			->db()
+			->message($sql, $type)
+			->add();
 	}
 
-	abstract public function resetDB( $DBconfig );
+    public function resetDB($dbName, $dbConf = null)
+	{
+        if ($this->_dbConf !== null && (!isset($this->_dbConf[$dbName]) || $this->_dbConf[$dbName] != $dbConf))
+        {
+            $this->_dbName          = $dbName;
+            $this->_dbConf[$dbName] = $dbConf;
+            $this->initDb($dbConf);
+            return $this;
+        }
+        if ($this->_dbName != $dbName)
+        {
+            if (isset($this->_dbConf[$dbName]))
+                $this->initDb($this->_dbConf[$dbName]);
+            else
+            {
+                EventsManager::getDi()
+                    ->attach(array('obj'=> new Exception('No configure for database '.$dbName, 1015, true, 1),
+                                'func'  => 'showException',
+                                'params'=> array()));
+            }
+        }
+		return $this;
+	}
 	abstract public function __call($method, $params);
 	abstract public function setDb($DbName);
 	abstract public function getOne();

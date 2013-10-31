@@ -4,78 +4,65 @@ use Cy\Mvc\Event\Event;
 
 class Model extends Event
 {
-	protected $model_path;
-	protected $db;
-	
+	protected $_modelPath   =   MODEL;
+	protected $_db          =   null;
+    protected $_table       =   '';
+
 	public function __construct()
 	{
-		parent :: __construct();
-		$Config_Base_Info = $this -> getEvent_Register()
-								  -> getRegistered('Cy\Config\Config')
-								  -> getConfig('BASE_INFO');
-		if ( isset($Config_Base_Info['model_path']) )
-		{
-			$l = strlen($Config_Base_Info['model_path']);
-			if ( $Config_Base_Info['model_path'][$l-1] != DIRECTORY_SEPARATOR )
-				$Config_Base_Info['model_path'] = $Config_Base_Info['model_path']. DIRECTORY_SEPARATOR;
-			$this -> model_path = $Config_Base_Info['model_path'];
-		}
-		else
-			$this -> model_path = Cy_ROOT. '..'. DIRECTORY_SEPARATOR. 'model'. DIRECTORY_SEPARATOR;
-		$this -> db = $this -> getEvent_Register()
-							-> getRegistered('Cy\Db\Db');
+        parent::__construct();
+        $this->_table       =   '';
+        $this->_modelPath   =   MODEL;
+        $conf = $this->getRegistered('Cy\Config\Config')->getConfig('baseConf');
+        $this->_db          =   $this->getRegistered('Cy\Db\Db', $conf['db']);
+        unset($conf);
 	}
-	
-	public function getModel($model_name,$params = array())
+
+	public function getModel($modelName, $params = array())
 	{
-		if ( !file_exists($this -> model_path. $model_name. 'php') )
-			 $this -> error('No such model has been found in '. $this -> model_path, 1010);
-		$namespace = 'model\\'. $model_name;
-		$params['model_path'] = $this -> model_path;
-		return $this -> getEvent_Register()
-					 -> getRegistered($namespace,$params);
+		if ( !file_exists($this->_modelPath.$modelName.'.php') )
+			 $this->error('No such model '.$modelName.' found in '.$this->_modelPath, 1010, true);
+		$namespace = 'model\\'. $modelName;
+		return $this->getEventRegister()
+					->getRegistered($namespace, $params);
 	}
-	
-	protected function getPlugin()
+
+	protected function getPlugin($pluginName, $params)
 	{
-		$params = func_get_args();
-		$plugin_name = array_shift($params);
-		if ( is_array($params) && count($params) === 1)
-			$params = $params[0];
-		return $this -> getEvent_Register()
-					 -> getRegistered('Cy\Plugin\Plugin')
-					 -> getPluginObj($plugin_name,$params);
+		return $this->getEventRegister()
+					->getRegistered('Cy\Plugin\Plugin')
+					->getPluginObj($pluginName, $params);
 	}
-	
-	public function add($columns,$table = null)
+
+	public function add($columns, $table = null)
 	{
 		if ($table === null)
-			$table = $this -> table;
-		$re = $this -> db -> insert($table,$columns) -> query();
+			$table = $this->_table;
+		$re = $this->_db->insert($table, $columns)->query();
 		if ( $re instanceof \PDOStatement )
-			return $re -> rowCount();
+			return $re->rowCount();
 		return 0;
 	}
-	
-	public function edit($columns,$where,$table = null)
+
+	public function edit($columns, $where, $table = null)
 	{
 		if ($table === null)
-			$table = $this -> table;
-		$re = $this -> db -> update($table,$columns)
-						  -> where($where);
+			$table = $this->_table;
+		$re = $this->_db->update($table, $columns)
+						->where($where);
 		if ( $re instanceof \PDOStatement )
-			return $re -> rowCount();
+			return $re->rowCount();
 		return 0;
 	}
-	
-	public function del($where,$table = null)
+
+	public function del($where, $table = null)
 	{
 		if ($table === null)
-			$table = $this -> table;
-		$re = $this -> db -> delete($table)
-						  -> where($where);
+			$table = $this->_table;
+		$re = $this->_db->delete($table)
+						->where($where);
 		if ( $re instanceof \PDOStatement )
-			return $re -> rowCount();
+			return $re->rowCount();
 		return 0;
 	}
 }

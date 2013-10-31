@@ -37,9 +37,9 @@ class EventRegister extends EventFactory implements InterfaceEventRegister
 	/**
 	 * @see library/Cy/Mvc/Event/Cy\Mvc\Event.Interface_Event_Register::register()
 	 */
-	public function register($namespace, $eventObj)
+	public function register($namespace, $eventObj, $params = array())
 	{
-        $this->_eventStore->set($namespace, $eventObj);
+        $this->_eventStore->set($namespace, $eventObj, $params);
 	}
 
 	/**
@@ -47,11 +47,7 @@ class EventRegister extends EventFactory implements InterfaceEventRegister
      */
 	public function getRegistered($namespace, $params = array())
 	{
-		if ( !$this->isRegistered($namespace) )
-		{
-			$this->register($namespace, $this->make($namespace, $params));
-		}
-		return $this->eventStore->get($namespace);
+		return $this->_eventStore->get($namespace, $params);
 	}
 
 	/**

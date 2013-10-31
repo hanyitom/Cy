@@ -1,42 +1,45 @@
 <?php
 namespace Cy\Plugin;
-use Cy\Mvc\Event\Event;
-use Cy\Mvc\Events_Manager;
 
-class Plugin extends Event
+use Cy\File\File;
+use Cy\Plugin\PluginCachePool;
+
+class Plugin
 {
-//	private $Plugin_root;
-	private $File_obj;
+    private $_pluginCachePool   =   null;
+    private $_pluginFile        =   null;
 
-	public function __construct()
+	private function __construct()
 	{
-		parent::__construct();
-//		$this -> Plugin_root = __DIR__;
-		$this->File_obj = $this->getRegistered('Cy\File\File', PLUGIN);
+        $this->_pluginCachePool = PluginCachePool::getInstance();
+        $this->_pluginFile      = new File(PLUGIN);
 	}
 
-	private function Plugin_exists($Plugin)
+    public static function getInstance()
+    {
+        return new self();
+    }
+
+	public function getPluginObj($pluginName, $params)
 	{
-		if( $this->File_obj->dir_exists($Plugin) )
-		{
-			if (file_exists(PLUGIN. DIR_S.$Plugin.DIR_S.$Plugin.'.php') )
-				return true;
-			else
-				$this -> error('No such Plugin class "'.$Plugin .'" has been found!', 1006);
-		}
-		else
-			$this -> error('No such Plugin "'.$Plugin.'" has been found!', 1007);
-		return false;
+        if ($tmp = $this->_pluginCachePool->get($pluginName, $params))
+            return $tmp;
+		if( $tmp = $this->makePluginObj($pluginName, $params) )
+			return $tmp;
 	}
 
-	public function getPluginRoot()
-	{
-		return $this -> Plugin_root;
-	}
-
-	public function getPluginObj($Plugin, $params)
-	{
-		if( $this -> Plugin_exists($Plugin) )
-			return $this -> getRegistered('Cy\Plugin\\'.$Plugin.'\\'.$Plugin, $params);
-	}
+    private function makePluginObj($pluginName, $params)
+    {
+        $path = PLUGIN.$pluginName;
+        if (in_array($pluginName, $this->_pluginFile->getDirs()))
+            $path .= DIR_S.$pluginName.'.php';
+        else if(in_array($pluginName.'.php', $this->_pluginFile->getFiles()))
+            $path .= '.php';
+        else
+            return false;
+        if (!file_exists($path))
+            return false;
+        require_once($path);
+        return new $pluginName($params);
+    }
 }

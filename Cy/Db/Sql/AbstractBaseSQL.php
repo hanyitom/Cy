@@ -1,7 +1,7 @@
 <?php
 namespace Cy\Db\Sql;
-use Cy\Mvc\Event\Event_Register;
-use Cy\Mvc\Events_Manager;
+use Cy\Mvc\Event\EventRegister;
+use Cy\Mvc\EventsManager;
 
 /**
  * SQL基类
@@ -13,39 +13,39 @@ abstract class Abstract_BaseSQL
 	 * sql语句
 	 * @var String
 	 */
-	protected $sql		=	null;
-	protected $where	=	null;
-	protected $group	=	null;
-	protected $order	=	null;
-	protected $limit	=	null;
-	protected $having	=	null;
-	protected $Db;
-	
+	protected $_sql		=	null;
+	protected $_where	=	null;
+	protected $_group	=	null;
+	protected $_order	=	null;
+	protected $_limit	=	null;
+	protected $_having	=	null;
+	protected $_db;
+
 	public function __construct()
 	{
-		$this -> Db = Events_Manager :: getEvent_Register() -> getRegistered('Cy\Db\Db');
+		$this->_db = EventsManager::getEventRegister()->getRegistered('Cy\Db\Db');
 	}
-	
+
 	public function where($where)
 	{
-		$this -> where = ' where '. $where;
+		$this->_where = ' where '. $where;
 		return $this;
 	}
-	
+
 	public function group($group, $having = null)
 	{
-		$this -> group = ' group by '. $group;
-		if(having !== null)
-			$this -> having = ' having '. $having;
+		$this->_group = ' group by '. $group;
+		if($having !== null)
+			$this->_having = ' having '. $having;
 		return $this;
 	}
-	
+
 	public function order($order, $sort = 'DESC')
 	{
-		$this -> order = ' order by '. $order. ' '. $sort;
+		$this->_order = ' order by '. $order. ' '. $sort;
 		return $this;
 	}
-	
+
 	public function limit($end, $offset = null)
 	{
 		$limit = ' limit ';
@@ -53,21 +53,21 @@ abstract class Abstract_BaseSQL
 			$limit .= $end;
 		else
 			$limit .= $offset. ','. $end;
-		$this -> limit = $limit;
+		$this->_limit = $limit;
 		return $this;
 	}
-	
+
 	public function query()
 	{
-		$this -> toString();
-		return $this -> Db -> query();
+		$this->toString();
+		return $this->_db->query();
 	}
-	
+
 	public function execute()
 	{
-		$this -> toString();
-		return $this -> Db -> execute();
+		$this->toString();
+		return $this->_db->execute();
 	}
-	
+
 	abstract public function toString();
 }
