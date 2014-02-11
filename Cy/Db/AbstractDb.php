@@ -63,7 +63,6 @@ abstract class AbstractDb
 		}
 		catch(\PDOException $e)
 		{
-            die($e->getMessage());
             EventsManager::getDi()
                 ->attach(array('obj'=> new Exception($e->getMessage().' in '.$e->getFile().' on line '.$e->getLine(), 1003, true, 1),
                             'func'  => 'showException',
