@@ -4,6 +4,7 @@ namespace Cy\Mvc;
 use Cy\Mvc\EventsManager;
 use Cy\Loader\Loader;
 use Cy\Module\Modules;
+use Cy\Mvc\Event\EventException;
 
 class Router
 {
@@ -50,4 +51,10 @@ class Router
 		$c = new $class();
 		return $c->$action();
 	}
+    public function error($message, $error_code, $trace = false, $lv = 0, $previous = null){
+        EventsManager::getDi()
+            ->attach(array('obj'=>  new EventException($message, $error_code, $trace, $lv, $previous),
+                'func'=>    'showException',
+                'params'=>  array()));
+    }
 }
