@@ -1,7 +1,7 @@
 <?php
 namespace controller;
 
-use Cy/Mvc/Controller/Controller;
+use Cy\Mvc\Controller\Controller;
 
 class index extends Controller
 {

@@ -43,8 +43,8 @@ class Router
 
 	public function endRouter()
 	{
-		$class  = $this->namespace;
-		$action = $this->request->getAction();
+		$class  = $this->_namespace;
+		$action = $this->_request->getAction();
 		if ( !in_array($action, get_class_methods($class)) )
 			$this->error('No such action has been found in class "'.$class.'"', 1010, true, 1);
 		$c = new $class();

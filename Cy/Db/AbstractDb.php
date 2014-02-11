@@ -52,7 +52,7 @@ abstract class AbstractDb
     {
 		try
 		{
-			$dsn = $dbConf['type'].':host='.$dbConf['host'].';dbname='.$dbConf['dbName'];
+			$dsn = $dbConf['type'].':dbname='.$dbConf['dbName'].';host='.$dbConf['host'];
 			if ( isset($dbConf['port']) )
 				$dsn .= ';port='. $dbConf['port'];
 			$arr = array(\PDO::ATTR_PERSISTENT => $dbConf['persistent'],
@@ -63,6 +63,7 @@ abstract class AbstractDb
 		}
 		catch(\PDOException $e)
 		{
+            die($e->getMessage());
             EventsManager::getDi()
                 ->attach(array('obj'=> new Exception($e->getMessage().' in '.$e->getFile().' on line '.$e->getLine(), 1003, true, 1),
                             'func'  => 'showException',

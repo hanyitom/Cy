@@ -20,6 +20,6 @@ class Response
 
 	public function getResult()
 	{
-        $_router->endRouter();
+        $this->_router->endRouter();
     }
 }
