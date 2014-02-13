@@ -44,6 +44,12 @@ class Model extends Event
 		return 0;
 	}
 
+    public function get($columns, $table = null){
+        if($table === null)
+            $table = $this->_table;
+        return $this->_db->select($table, $columns);
+    }
+
 	public function edit($columns, $where, $table = null)
 	{
 		if ($table === null)
