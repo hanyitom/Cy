@@ -6,34 +6,38 @@ use Cy\Exception\Exception;
 
 class Render
 {
-	public static $_templatePath    =   TEMPLATE;
-	public static $_templateFile    =   '';
-	public static $_data            =   array();
-	public static $_isDisplay       =   false;
+	private $_templatePath    =   TEMPLATE;
+	private $_templateFile    =   '';
+	private $_data            =   array();
+	private $_isDisplay       =   false;
 
 	public static function initialization()
 	{
-		self::$_isDisplay   = false;
-		self::$_data        = array();
-		self::$_templatePath= TEMPLATE;
+        return new self;
+    }
+
+    private function __construct(){
+        $this->_isDisplay   = false;
+		$this->_data        = array();
+		$this->_templatePath= TEMPLATE;
 		EventsManager::getDi()->detach();
         EventsManager::getDi()
-            ->attach(array('obj'    => new self(),
+            ->attach(array('obj'    => $this,
                         'func'      => 'display',
                         'params'    => array()));
-	}
+    }
 
 	public function display()
 	{
-		if ( self::$_isDisplay )
+		if ( $this->_isDisplay )
 		{
-			if( !empty(self::$_data) )
+			if( !empty($this->_data) )
 			{
-				foreach(self::$_data as $k => $v)
+				foreach($this->_data as $k => $v)
 					$$k = $v;
 			}
 
-			$path = self::$_templatePath.self::$_templateFile;
+			$path = $this->_templatePath.$this->_templateFile;
 			if ( file_exists($path) )
 				require_once($path);
 			else
@@ -44,28 +48,28 @@ class Render
 		}
 	}
 
-	public static function setTemplateFile($file)
+	public function setTemplateFile($file)
 	{
-		self::$template_file = $file;
+		$this->_templateFile = $file;
 	}
 
-	public static function getTemplatePath()
+	public function getTemplatePath()
 	{
-		return self::$template_path;
+		return $this->_templatePath;
 	}
 
-	public static function setTemplatePath($path)
+	public function setTemplatePath($path)
 	{
-		self::$template_path = $path;
+		$this->_templatePath = $path;
 	}
 
-	public static function assign($name,$data)
+	public function assign($name,$data)
 	{
-		self::$data[$name] = $data;
+		$this->_data[$name] = $data;
 	}
 
-	public static function isDisplay()
+	public function isDisplay()
 	{
-		self::$isDisplay = true;
+		$this->_isDisplay = true;
 	}
 }

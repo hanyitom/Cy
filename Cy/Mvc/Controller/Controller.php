@@ -1,13 +1,16 @@
 <?php
 namespace Cy\Mvc\Controller;
 use Cy\Mvc\Event\Event;
-use Cy\Mvc\View;
+use Cy\Mvc\Render;
 use Cy\Mvc\Request;
 
 class Controller extends Event
 {
+    protected $_render;
+    
 	public function __construct()
 	{
+        $this->_render = Render::initialization();
 		parent :: __construct();
 		$this -> init();
 	}
@@ -20,38 +23,42 @@ class Controller extends Event
 					 -> getRegistered('Cy\Mvc\Model\Model')
 					 -> getModel($model_name);
 	}
-	
-	public function display($file)
-	{
-		View :: isDisplay();
-		View :: setTemplateFile($file);
-	}
-	
-	public function jump($info,$callBackUrl)
-	{
-		View :: isDisplay();
-		$data['info'] = $info;
-		$data['callBackUrl'] = 'http://'.$callBackUrl;
+
+    /*
+     * $type can be 'info','success','warning' or 'danger'!
+     */
+	protected function jump($type, $info,$callBackUrl)
+    {
+		$this->_render->isDisplay();
+        $data['info'] = $info;
+        $data['type'] = $type;
+		$data['callBackUrl'] = (strtolower(substr($callBackUrl,0,4))=='http')? $callBackUrl:'http://'.$callBackUrl;
 		$this -> assign('data', $data);
-		View :: setTemplateFile('public/jump.php');
+		$this->_render->setTemplateFile('public/jump.php');
 	}
-	
-	public function assign($name,$data)
+
+	protected function display($file)
 	{
-		View :: assign($name, $data);
+		$this->_render->isDisplay();
+		$this->_render->setTemplateFile($file);
 	}
 	
-	public function getTemplatePath()
+	protected function assign($name,$data)
 	{
-		return View :: getTemplatePath();
+		$this->_render->assign($name, $data);
 	}
 	
-	public function setTemplatePath($path)
+	protected function getTemplatePath()
 	{
-		View :: setTemplatePath($path);
+		return $this->_render->getTemplatePath();
 	}
 	
-	public function getParams()
+	protected function setTemplatePath($path)
+	{
+		$this->_render->setTemplatePath($path);
+	}
+	
+	protected function getParams()
 	{
 		return Request :: getParams();
 	}

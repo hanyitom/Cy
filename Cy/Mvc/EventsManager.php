@@ -58,7 +58,6 @@ class EventsManager
         if (self::$_exception !== null)
             self::$_exception->showException();
         new self();
-        Render::Initialization();
         new Response(Router::getInstance(Request::getInstance(), self::$_isModules));
         self::$_di->detach();
 	}
