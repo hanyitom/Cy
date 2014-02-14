@@ -137,6 +137,7 @@ abstract class AbstractDb
 	 */
 	public function prepare($driver_option = array())
 	{
+        $this->_sql = mysql_escape_string($this->_sql);
 		$this->_prepare = $this->_pdo->prepare($this->_sql,$driver_option);
 		$this->dbLog('prepare');
 		return $this;
@@ -148,6 +149,7 @@ abstract class AbstractDb
 	 */
 	public function exec($sql)
 	{
+        $this->_sql = mysql_escape_string($this->_sql);
 		$re = $this->_pdo->exec($sql);
 		if($re)
 		{
@@ -178,6 +180,7 @@ abstract class AbstractDb
 	 */
 	public function query()
 	{
+        $this->_sql = mysql_escape_string($this->_sql);
 		$re = $this->_pdo->query($this->_sql);
 		if($re instanceof \PDOStatement)
 		{

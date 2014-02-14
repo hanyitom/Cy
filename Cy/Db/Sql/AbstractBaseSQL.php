@@ -63,10 +63,10 @@ abstract class Abstract_BaseSQL
 		return $this->_db->query();
 	}
 
-	public function execute()
+	public function exec()
 	{
 		$this->toString();
-		return $this->_db->execute();
+		return $this->_db->exec();
 	}
 
 	abstract public function toString();

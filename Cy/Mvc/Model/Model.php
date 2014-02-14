@@ -27,7 +27,7 @@ class Model extends Event
 					->getRegistered($namespace, $params);
 	}
 
-	protected function getPlugin($pluginName, $params)
+	protected function getPlugin($pluginName, $params = array())
 	{
 		return $this->getEventRegister()
 					->getRegistered('Cy\Plugin\Plugin')
