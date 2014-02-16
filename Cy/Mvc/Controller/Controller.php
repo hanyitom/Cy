@@ -3,6 +3,7 @@ namespace Cy\Mvc\Controller;
 use Cy\Mvc\Event\Event;
 use Cy\Mvc\Render;
 use Cy\Mvc\Request;
+use Cy\Mvc\EventsManager;
 
 class Controller extends Event
 {
@@ -19,7 +20,7 @@ class Controller extends Event
 	
 	protected function getModel($model_name)
 	{
-		return $this -> getEvent_Register()
+		return $this -> getEventRegister()
 					 -> getRegistered('Cy\Mvc\Model\Model')
 					 -> getModel($model_name);
 	}
@@ -32,15 +33,18 @@ class Controller extends Event
 		$this->_render->isDisplay();
         $data['info'] = $info;
         $data['type'] = $type;
+        $callBackUrl = ($callBackUrl[0]=='/')? $_SERVER['HTTP_HOST'].$callBackUrl:$callBackUrl;
 		$data['callBackUrl'] = (strtolower(substr($callBackUrl,0,4))=='http')? $callBackUrl:'http://'.$callBackUrl;
-		$this -> assign('data', $data);
+        $this->assign('data', $data);
 		$this->_render->setTemplateFile('public/jump.php');
+        EventsManager::getDi()->detach();
 	}
 
 	protected function display($file)
 	{
 		$this->_render->isDisplay();
 		$this->_render->setTemplateFile($file);
+        EventsManager::getDi()->detach();
 	}
 	
 	protected function assign($name,$data)

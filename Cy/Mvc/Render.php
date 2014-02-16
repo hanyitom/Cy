@@ -28,7 +28,7 @@ class Render
     }
 
 	public function display()
-	{
+    {
 		if ( $this->_isDisplay )
 		{
 			if( !empty($this->_data) )
@@ -36,7 +36,6 @@ class Render
 				foreach($this->_data as $k => $v)
 					$$k = $v;
 			}
-
 			$path = $this->_templatePath.$this->_templateFile;
 			if ( file_exists($path) )
 				require_once($path);
@@ -45,7 +44,9 @@ class Render
                     ->attach(array('obj'=> new Exception('No such template file '.$path.' been found!', 1002, true),
                                 'func'  =>'showException',
                                 'params'=> array()));
-		}
+                EventsManager::getDi()->detach();
+        }
+        die;
 	}
 
 	public function setTemplateFile($file)

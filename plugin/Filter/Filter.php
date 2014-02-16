@@ -1,6 +1,4 @@
 <?php
-namespace Cy\Plugin\Filter;
-
 class Filter{
     public function isEmail($email, $emailServer = array()){
         if(!filter_var($email, FILTER_VALIDATE_EMAIL))
@@ -28,12 +26,12 @@ class Filter{
 
     public function filterInput($isGet = false){
         if($isGet)
-            return $this->filter($_GET);
+            return $this->_filter($_GET);
         else
-            return $this->filter($_POST);
+            return $this->_filter($_POST);
     }
 
-    private function filter($val){
+    private function _filter($val){
         foreach($val as $k=>$v){
             $v = trim($v);
             switch(true){
@@ -44,7 +42,7 @@ class Filter{
                     $val[$k] = url_encode(addslashes($v));
                 break;
                 case $this->inject_check($v):
-                    $t = addslashes(str_ireplace($v);
+                    $t = addslashes(str_ireplace($v));
                     $t = str_ireplace('union','',$t);
                     $t = str_ireplace('where','',$t);
                     $val[$k] = str_ireplace('join',$t);
@@ -56,7 +54,7 @@ class Filter{
         }
     }
     private function inject_check($val){
-        $regexp = '%(&|\||\^|\$|\*i|unoin|join|where)%/ig';
+        $regexp = '%(&|\||\^|\$|\*i|unoin|join|where)%i';
         return preg_match($regexp,$val);
     }
 }

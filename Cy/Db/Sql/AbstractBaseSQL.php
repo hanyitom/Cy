@@ -7,7 +7,7 @@ use Cy\Mvc\EventsManager;
  * SQL基类
  * @author Toby
  */
-abstract class Abstract_BaseSQL
+abstract class AbstractBaseSQL
 {
 	/**
 	 * sql语句
@@ -63,10 +63,10 @@ abstract class Abstract_BaseSQL
 		return $this->_db->query();
 	}
 
-	public function exec()
+	public function execute()
 	{
 		$this->toString();
-		return $this->_db->exec();
+		return $this->_db->execute();
 	}
 
 	abstract public function toString();

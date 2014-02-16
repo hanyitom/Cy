@@ -20,7 +20,8 @@ class PluginCachePool
 
     public function get($pluginName, $params)
     {
-        if ($params === null || $params === $this->_pool[$pluginName]['params'])
+        if ($params === null ||(isset($this->_pool[$pluginName])&&
+            $params === $this->_pool[$pluginName]['params']))
             return unserialize($this->_pool[$pluginName]['obj']);
         return false;
     }

@@ -1,6 +1,4 @@
 <?php
-namespace Cy\Plugin\Session;
-
 /**
  * Session
  * @author Toby

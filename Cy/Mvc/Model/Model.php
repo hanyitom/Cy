@@ -7,15 +7,15 @@ class Model extends Event
 	protected $_modelPath   =   MODEL;
 	protected $_db          =   null;
     protected $_table       =   '';
+    protected $_baseConf;
 
 	public function __construct()
 	{
         parent::__construct();
         $this->_table       =   '';
         $this->_modelPath   =   MODEL;
-        $conf = $this->getRegistered('Cy\Config\Config')->getConfig('baseConf');
-        $this->_db          =   $this->getRegistered('Cy\Db\Db', $conf['db']);
-        unset($conf);
+        $this->_baseConf    =   $this->getConfig('baseConf');
+        $this->_db          =   $this->getRegistered('Cy\Db\Db', $this->_baseConf['db']);
 	}
 
 	public function getModel($modelName, $params = array())
@@ -70,5 +70,13 @@ class Model extends Event
 		if ( $re instanceof \PDOStatement )
 			return $re->rowCount();
 		return 0;
-	}
+    }
+    public function getConfig($configName){
+        return $this->getRegistered('Cy\Config\Config')->getConfig($configName);
+    }
+    public function getBaseConf($key = null){
+        if($key)
+            return $this->baseConf[$key];
+        return $this->_baseConf;
+    }
 }

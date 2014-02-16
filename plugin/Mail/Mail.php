@@ -1,6 +1,4 @@
 <?php
-namespace Cy\Plugin\Mail;
-
 /**
  * 简单的Scoket Mail类
  * @author Toby
