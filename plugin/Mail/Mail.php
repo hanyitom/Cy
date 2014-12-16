@@ -12,6 +12,7 @@ class Mail
 	private $port;
 	private $isHTML;
 	private $socket;
+	private $subject;
 	
 	public function __construct()
 	{
@@ -20,6 +21,7 @@ class Mail
 		$this -> copy		= array();
 		$this -> content	= '';
 		$this -> port		= 25;
+		$this -> subject	= '';
 	}
 	
 	/**
@@ -59,8 +61,13 @@ class Mail
 	 */
 	public function setContent($contents,$isHTML = false)
 	{
-		$this -> contents = base64_encode($contents);
+		$this -> contents = $contents;
 		$this -> isHTML = $isHTML;
+		return $this;
+	}
+	
+	public function setSubject($subject){
+		$this -> subject = $subject;
 		return $this;
 	}
 	
@@ -76,27 +83,48 @@ class Mail
 		return socket_read($this -> socket, 1024);
 	}
 	
+	private function data(){
+		if ( !strstr($this -> comication("DATA"), '354') )
+			return false;
+		socket_write($this -> socket, "Content-type:text/html;charset=utf-8\r\n");
+		if( $this -> subject != '' )
+			socket_write($this -> socket, "Subject: ". $this -> subject. "\r\n");
+		socket_write($this -> socket, "\r\n");
+		socket_write($this -> socket, $this -> contents. "\r\n");
+		socket_write($this -> socket, ".\r\n");
+		return socket_read($this -> socket, 1024);
+	}
+	
 	public function send()
 	{
-		$host = explode('@',$this -> from);
+		$host = explode('@',$this -> from['address']);
 		$host = 'smtp.'.$host[1];
 		if ( !( $this -> socket	= socket_create(AF_INET,SOCK_STREAM,SOL_TCP ) ) )
 			return false;
 		if ( !socket_connect($this -> socket,$host,$this -> port) )
 			return false;
-		if ( !strstr(socket_read($this -> socket,1024 ),220) )
+		if ( !strstr(socket_read($this -> socket,1024 ),'220') )
 			return false;
-		if ( !strstr($this -> comication("HELO $host"), 250) )
+		if ( !strstr($this -> comication("HELO $host"), '250') )
 			return false;
-		if ( !strstr($this -> comication("AUTH login"), 334) )
+		if ( !strstr($this -> comication("AUTH login"), '334') )
 			return false;
-		if ( !strstr($this -> comication(base64_encode($this -> from['username'])), 334) )
+		if ( !strstr($this -> comication(base64_encode($this -> from['username'])), '334') )
 			return false;
-		if ( !strstr($this -> comication(base64_encode($this -> from['password'])), 235) )
+		if ( !strstr($this -> comication(base64_encode($this -> from['passwd'])), '235') )
 			return false;
-		if ( !strstr($this -> comication("MAIL From:<".$this -> from['address'].">"), 250) )
+		if ( !strstr($this -> comication("MAIL From:<".$this -> from['address'].">"), '250') )
 			return false;
-		if ( !strstr($this -> comication("HELO $host"), 250) )
+		foreach($this -> to as $to){
+			if ( !strstr($this -> comication("RCPT TO: <$to>"), '250') )
+				return false;
+		}
+		if ( !strstr($this -> comication("RCPT TO: <$to>"), '250') )
+				return false;
+		if ( !strstr($this -> data(), '250') )
 			return false;
+		if ( !strstr($this -> comication("QUIT"), '221') )
+			return false;
+		return true;
 	}
 }
