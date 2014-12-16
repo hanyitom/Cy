@@ -79,7 +79,7 @@ class Mail
 	public function send()
 	{
 		$host = explode('@',$this -> from);
-		$host = 'stmp.'.$host[1];
+		$host = 'smtp.'.$host[1];
 		if ( !( $this -> socket	= socket_create(AF_INET,SOCK_STREAM,SOL_TCP ) ) )
 			return false;
 		if ( !socket_connect($this -> socket,$host,$this -> port) )
