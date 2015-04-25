@@ -53,3 +53,12 @@ class Di
 
 	private function __clone(){}
 }
+
+interface wrapper{
+	protected $_list;
+	protected $_callback_list;
+	public function attach($args);
+	public function detach();
+	public function get($name);
+	public function refresh($name);
+}
